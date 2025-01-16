@@ -43,6 +43,7 @@ client.on("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+    console.log('asd')
     if (interaction.isMessageContextMenuCommand()) {
         const { commandName, targetMessage } = interaction;
         if (commandName === "Open github issue") {
@@ -50,6 +51,7 @@ client.on("interactionCreate", async (interaction) => {
             interaction.showModal(modal);
         }
     } else if (interaction.isModalSubmit()) {
+        const guildId = process.env.GUILD_ID || "";
         const { fields } = interaction;
         const issueTitle = fields.getField("issueTitle").value;
         const issueDescription = fields.getField("issueDescription").value;
@@ -57,13 +59,18 @@ client.on("interactionCreate", async (interaction) => {
             auth: process.env.GITHUB_ACCESS_TOKEN,
             baseUrl: "https://api.github.com",
         });
+        console.log('%o', interaction)
+        const messageBody = `${issueDescription}
+
+https://discord.com/channels/${guildId}/${interaction.channelId}/${interaction.message?.id}
+`
 
         octokit.rest.issues
             .create({
                 owner: process.env.GITHUB_USERNAME || "",
                 repo: process.env.GITHUB_REPOSITORY || "",
                 title: issueTitle,
-                body: issueDescription,
+                body: messageBody,
             })
             .then((res) => {
                 interaction.reply(`Issue created: ${res.data.html_url}`);
